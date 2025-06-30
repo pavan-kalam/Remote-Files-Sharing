@@ -114,9 +114,6 @@ sharing/
 
 ## ngrok Setup & Public Access
 
-### 📡 What is ngrok?
-ngrok creates secure tunnels to your local server, making it accessible from anywhere on the internet. Perfect for sharing your file upload system with others remotely.
-
 ### 🛠️ Installation
 
 #### macOS (using Homebrew)
@@ -129,23 +126,6 @@ brew install ngrok
 2. Extract to a folder in your PATH
 3. Or use Chocolatey: `choco install ngrok`
 
-#### Linux
-```bash
-# Download and install
-curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-sudo apt update && sudo apt install ngrok
-```
-
-### 🔑 Setup Authentication
-1. Sign up at [ngrok.com](https://ngrok.com) (free account)
-2. Get your authtoken from the dashboard
-3. Configure ngrok:
-```bash
-ngrok config add-authtoken YOUR_AUTH_TOKEN
-```
-
-### 🚀 Basic Usage
 
 #### Start a Tunnel
 ```bash
@@ -230,28 +210,6 @@ When ngrok is running, access the web interface at: `http://localhost:4040`
 - 📈 **Traffic statistics** - Connection metrics and performance
 - ⚙️ **Tunnel status** - Active tunnels and configuration
 
-### 📝 Configuration File
-
-Create `~/.ngrok2/ngrok.yml` for persistent settings:
-
-```yaml
-version: "2"
-authtoken: YOUR_AUTH_TOKEN
-region: us
-console_ui_color: transparent
-tunnels:
-  file-sharing:
-    proto: http
-    addr: 3000
-    subdomain: myfileapp
-    auth: "admin:secretpassword"
-    host_header: rewrite
-```
-
-Start configured tunnel:
-```bash
-ngrok start file-sharing
-```
 
 ### 🌐 For This File Sharing App
 
@@ -264,16 +222,6 @@ npm start
 ngrok http 3000
 ```
 
-#### Get Your Public URL
-After starting ngrok, look for the line:
-```
-Forwarding    https://abcd-1-2-3-4.ngrok-free.app -> http://localhost:3000
-```
-
-**Share this URL with others:**
-- **Public Upload**: `https://abcd-1-2-3-4.ngrok-free.app`
-- **Admin Panel**: `http://localhost:3000/admin` (only accessible locally)
-
 #### API to Get Current URL
 ```bash
 # Get tunnel information programmatically
@@ -282,31 +230,6 @@ curl http://localhost:4040/api/tunnels
 # Extract HTTPS URL only
 curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep https | cut -d'"' -f4
 ```
-
-### ⚠️ Important Notes
-
-#### Free Plan Limitations
-- ✅ **1 simultaneous tunnel**
-- ✅ **40 connections/minute**
-- ✅ **Random subdomain** (changes on restart)
-- ❌ No custom domains
-- ❌ No reserved subdomains
-- ❌ No password protection
-
-#### Paid Plan Benefits
-- 🎯 **Multiple simultaneous tunnels**
-- 🎯 **Custom/reserved subdomains**
-- 🎯 **Custom domains**
-- 🎯 **Password protection**
-- 🎯 **IP whitelisting**
-- 🎯 **Higher connection limits**
-
-#### Security Considerations
-- 🔐 **Use HTTPS URLs** (ngrok provides both HTTP and HTTPS)
-- 🔐 **Admin panel stays local** (not exposed via ngrok)
-- 🔐 **Monitor ngrok dashboard** at `http://localhost:4040`
-- 🔐 **Consider authentication** for sensitive files
-- 🔐 **URLs change** when restarting (free plan)
 
 ### 🛑 Stopping ngrok
 ```bash
