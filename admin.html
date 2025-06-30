@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f39c12;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .stats-bar {
+            background: #ecf0f1;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 1px solid #bdc3c7;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-item.new {
+            border-left-color: #e74c3c;
+            animation: slideIn 0.5s ease;
+        }
+
+        .upload-item.processed {
+            opacity: 0.6;
+            border-left-color: #27ae60;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .upload-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .sender-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sender-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .upload-time {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .file-list {
+            margin: 15px 0;
+        }
+
+        .file-item {
+            background: white;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ecf0f1;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-size {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .actions {
+            margin-top: 15px;
+        }
+
+        .path-selection {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        .path-shortcuts {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .path-shortcut {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .path-shortcut:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .path-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .path-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-browse {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-browse:hover {
+            background: #d68910;
+            transform: translateY(-2px);
+        }
+
+        .no-uploads {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .no-uploads .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+
+        .processing {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .processing::after {
+            content: "Processing...";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ File Upload Admin Panel</h1>
+            <p>Manage incoming file uploads and organize them</p>
+            <div class="notification-badge" id="notificationBadge">0</div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="pendingCount">0</div>
+                <div class="stat-label">Pending Uploads</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalFiles">0</div>
+                <div class="stat-label">Total Files</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="processedCount">0</div>
+                <div class="stat-label">Processed</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div id="uploadsContainer">
+                <div class="no-uploads">
+                    <div class="icon">📭</div>
+                    <h3>No pending uploads</h3>
+                    <p>Waiting for files to be uploaded...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadUploads()">🔄</button>
+
+    <script>
+        let lastUploadCount = 0;
+        let refreshInterval;
+        let savedPaths = {}; // Store user-entered paths
+
+        // Load uploads on page load
+        loadUploads();
+        
+        // Auto-refresh every 5 seconds (reduced frequency)
+        refreshInterval = setInterval(loadUploads, 5000);
+
+        async function loadUploads() {
+            try {
+                const response = await fetch('/api/pending-uploads');
+                const uploads = await response.json();
+                
+                // Update stats
+                const pending = uploads.filter(u => !u.processed);
+                const processed = uploads.filter(u => u.processed);
+                const totalFiles = uploads.reduce((sum, u) => sum + u.files.length, 0);
+                
+                document.getElementById('pendingCount').textContent = pending.length;
+                document.getElementById('totalFiles').textContent = totalFiles;
+                document.getElementById('processedCount').textContent = processed.length;
+                document.getElementById('notificationBadge').textContent = pending.length;
+
+                // Show notification if new uploads
+                if (pending.length > lastUploadCount) {
+                    showNotification(`🔔 New files received! ${pending.length - lastUploadCount} new upload(s)`);
+                }
+                lastUploadCount = pending.length;
+
+                renderUploads(uploads);
+            } catch (error) {
+                console.error('Error loading uploads:', error);
+            }
+        }
+
+        function saveCurrentPaths() {
+            // Save current path input values before refresh
+            const pathInputs = document.querySelectorAll('.path-input');
+            pathInputs.forEach(input => {
+                const uploadId = input.id.replace('path-', '');
+                savedPaths[uploadId] = input.value;
+            });
+        }
+
+        // Remove the restoreCurrentPaths function as we're now using savedPaths directly in HTML generation
+
+        function renderUploads(uploads) {
+            // Save current paths before re-rendering
+            saveCurrentPaths();
+            
+            const container = document.getElementById('uploadsContainer');
+            
+            if (uploads.length === 0) {
+                container.innerHTML = `
+                    <div class="no-uploads">
+                        <div class="icon">📭</div>
+                        <h3>No pending uploads</h3>
+                        <p>Waiting for files to be uploaded...</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = uploads.map(upload => {
+                // Get saved path for this upload or use default
+                const savedPath = savedPaths[upload.id] || '/Users/pavankalam/Desktop/ReceivedFiles';
+                
+                return `
+                <div class="upload-item ${upload.processed ? 'processed' : 'new'}" id="upload-${upload.id}">
+                    <div class="upload-header">
+                        <div class="sender-info">
+                            <span class="sender-name">👤 ${upload.senderName}</span>
+                            ${upload.processed ? '<span style="color: #27ae60; font-weight: bold;">✅ Processed</span>' : '<span style="color: #e74c3c; font-weight: bold;">⏳ Pending</span>'}
+                        </div>
+                        <div class="upload-time">📅 ${new Date(upload.uploadDate).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="file-list">
+                        ${upload.files.map(file => `
+                            <div class="file-item">
+                                <div class="file-info">
+                                    <span>📄 ${file.originalName}</span>
+                                    <span class="file-size">(${formatFileSize(file.size)})</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    ${upload.processed ? `
+                        <div style="background: #d4edda; padding: 10px; border-radius: 8px; color: #155724;">
+                            ✅ Files moved to: ${upload.destinationPath}
+                        </div>
+                    ` : `
+                        <div class="actions">
+                            <div class="path-selection">
+                                <div style="font-weight: 600; margin-bottom: 10px; color: #495057;">📁 Choose Destination:</div>
+                                <div class="path-shortcuts">
+                                    <button class="path-shortcut" onclick="setPath(${upload.id}, '/Users/pavankalam/Desktop/ReceivedFiles')">📋 Default</button>
+                                    <button class="path-shortcut" onclick="setPath(${upload.id}, '/Users/pavankalam/Desktop')">🖥️ Desktop</button>
+                                    <button class="path-shortcut" onclick="setPath(${upload.id}, '/Users/pavankalam/Documents')">📄 Documents</button>
+                                    <button class="path-shortcut" onclick="setPath(${upload.id}, '/Users/pavankalam/Downloads')">📥 Downloads</button>
+                                    <button class="path-shortcut" onclick="setPath(${upload.id}, '/Users/pavankalam/Desktop/Work')">💼 Work</button>
+                                    <button class="path-shortcut" onclick="setPath(${upload.id}, '/Users/pavankalam/Desktop/Personal')">👤 Personal</button>
+                                </div>
+                                <input type="text" class="path-input" id="path-${upload.id}" 
+                                       placeholder="📁 Enter custom destination path or click shortcuts above" 
+                                       value="${savedPath}"
+                                       onchange="savePath(${upload.id})"
+                                       oninput="savePath(${upload.id})">
+                                <div style="font-size: 0.85em; color: #6c757d;">💡 Tip: Use shortcuts above or type a custom path. Folders will be created automatically.</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-success" onclick="moveFiles(${upload.id})">💾 Save Files</button>
+                                <button class="btn btn-danger" onclick="dismissUpload(${upload.id})">🗑️ Dismiss</button>
+                            </div>
+                        </div>
+                        <div class="status-message" id="status-${upload.id}"></div>
+                    `}
+                </div>
+            `}).join('');
+
+            container.innerHTML = html;
+        }
+
+        async function moveFiles(uploadId) {
+            const pathInput = document.getElementById(`path-${uploadId}`);
+            const destinationPath = pathInput.value.trim();
+            
+            if (!destinationPath) {
+                showStatus(uploadId, 'Please enter a destination path', 'error');
+                return;
+            }
+
+            const uploadElement = document.getElementById(`upload-${uploadId}`);
+            uploadElement.classList.add('processing');
+
+            try {
+                const response = await fetch('/api/move-files', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        uploadId: uploadId,
+                        destinationPath: destinationPath
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showStatus(uploadId, `✅ Files moved successfully to ${destinationPath}`, 'success');
+                    setTimeout(loadUploads, 1000);
+                } else {
+                    showStatus(uploadId, `❌ Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(uploadId, `❌ Network error: ${error.message}`, 'error');
+            }
+
+            uploadElement.classList.remove('processing');
+        }
+
+        async function dismissUpload(uploadId) {
+            if (!confirm('Are you sure you want to dismiss this upload? Files will be deleted.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/dismiss-upload/${uploadId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadUploads();
+                } else {
+                    const result = await response.json();
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`Network error: ${error.message}`);
+            }
+        }
+
+        function showStatus(uploadId, message, type) {
+            const statusElement = document.getElementById(`status-${uploadId}`);
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type}`;
+            statusElement.style.display = 'block';
+            
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function savePath(uploadId) {
+            const pathInput = document.getElementById(`path-${uploadId}`);
+            if (pathInput) {
+                savedPaths[uploadId] = pathInput.value;
+            }
+        }
+
+        function setPath(uploadId, path) {
+            const pathInput = document.getElementById(`path-${uploadId}`);
+            pathInput.value = path;
+            savedPaths[uploadId] = path; // Save the new path
+            pathInput.style.borderColor = '#28a745';
+            pathInput.focus();
+            
+            // Brief highlight effect
+            setTimeout(() => {
+                pathInput.style.borderColor = '#3498db';
+            }, 1000);
+        }
+
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideInRight 0.5s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Page visibility change - pause/resume auto-refresh
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                clearInterval(refreshInterval);
+            } else {
+                refreshInterval = setInterval(loadUploads, 5000);
+                loadUploads(); // Immediate refresh when page becomes visible
+            }
+        });
+    </script>
+</body>
+</html> 

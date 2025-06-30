@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Sharing Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .upload-section {
+            padding: 40px;
+        }
+
+        .upload-area {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8fbff;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #00f2fe;
+            background: #f0f8ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #00f2fe;
+            background: #e6f3ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #4facfe;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .share-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .share-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .file-info {
+            flex-grow: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .remove-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .uploaded-files-section {
+            padding: 0 40px 40px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 File Sharing Hub</h1>
+            <p>Upload your documents and share them instantly</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="name-section" style="margin-bottom: 30px;">
+                <label for="senderName" style="display: block; font-size: 1.2em; color: #333; margin-bottom: 10px; font-weight: 600;">
+                    👤 Your Name (Required)
+                </label>
+                <input type="text" id="senderName" placeholder="Enter your full name..." style="width: 100%; padding: 15px; border: 2px solid #4facfe; border-radius: 10px; font-size: 1.1em; outline: none; transition: all 0.3s ease;">
+            </div>
+            
+            <div class="upload-area" id="uploadArea" style="opacity: 0.5; pointer-events: none;">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Drop files here or click to browse</div>
+                <div class="upload-subtext">Support for all file types • Max 500MB per file</div>
+                <input type="file" id="fileInput" multiple disabled>
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="file-list" id="fileList"></div>
+
+            <button class="share-btn" id="shareBtn">
+                🚀 Share Files
+            </button>
+
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+
+
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const shareBtn = document.getElementById('shareBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const senderNameInput = document.getElementById('senderName');
+
+        let selectedFiles = [];
+        let senderName = '';
+
+        // Enable upload area only when name is entered
+        senderNameInput.addEventListener('input', function() {
+            senderName = this.value.trim();
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (senderName.length >= 2) {
+                uploadArea.style.opacity = '1';
+                uploadArea.style.pointerEvents = 'auto';
+                fileInput.disabled = false;
+                this.style.borderColor = '#28a745';
+            } else {
+                uploadArea.style.opacity = '0.5';
+                uploadArea.style.pointerEvents = 'none';
+                fileInput.disabled = true;
+                this.style.borderColor = '#4facfe';
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            if (!fileInput.disabled) fileInput.click();
+        });
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            addFiles(files);
+        });
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            files.forEach(file => {
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+            updateFileList();
+            shareBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+            shareBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">📄 ${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFile(${index})">×</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        shareBtn.addEventListener('click', uploadFiles);
+
+        async function uploadFiles() {
+            if (selectedFiles.length === 0 || !senderName) return;
+
+            const formData = new FormData();
+            formData.append('senderName', senderName);
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            shareBtn.disabled = true;
+            shareBtn.textContent = '📤 Uploading...';
+            progressBar.style.display = 'block';
+            hideStatusMessage();
+
+            try {
+                // Simulate progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 90) progress = 90;
+                    progressFill.style.width = progress + '%';
+                }, 100);
+
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showStatusMessage(`✅ Successfully uploaded ${result.files.length} file(s)! Thank you, ${senderName}!`, 'success');
+                    selectedFiles = [];
+                    senderName = '';
+                    senderNameInput.value = '';
+                    updateFileList();
+                    shareBtn.style.display = 'none';
+                    
+                    // Reset upload area
+                    const uploadArea = document.getElementById('uploadArea');
+                    uploadArea.style.opacity = '0.5';
+                    uploadArea.style.pointerEvents = 'none';
+                    fileInput.disabled = true;
+                    senderNameInput.style.borderColor = '#4facfe';
+                } else {
+                    showStatusMessage(`❌ Upload failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatusMessage(`❌ Upload failed: ${error.message}`, 'error');
+            }
+
+            shareBtn.disabled = false;
+            shareBtn.textContent = '🚀 Share Files';
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+        }
+
+        function showStatusMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message status-${type}`;
+            statusMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                hideStatusMessage();
+            }, 5000);
+        }
+
+        function hideStatusMessage() {
+            statusMessage.style.display = 'none';
+        }
+
+
+    </script>
+</body>
+</html> 
